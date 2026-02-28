@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tickets - PulseCore</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark bg-danger">
+  <div class="container-fluid">
+    <span class="navbar-brand">Gestión de Tickets</span>
+  </div>
+</nav>
+
+<div class="container mt-4">
+
+  <!-- Crear Ticket -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5>Nuevo Ticket</h5>
+      <form id="ticketForm">
+        <input type="text" class="form-control mb-2" placeholder="Título" id="title" required>
+        <textarea class="form-control mb-2" placeholder="Descripción" id="description"></textarea>
+        <select class="form-select mb-2" id="priority">
+          <option value="LOW">Baja</option>
+          <option value="MEDIUM">Media</option>
+          <option value="HIGH">Alta</option>
+        </select>
+        <button class="btn btn-danger">Crear</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead class="table-danger">
+        <tr>
+          <th>Título</th>
+          <th>Estado</th>
+          <th>Prioridad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="ticketTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+
+async function loadTickets() {
+  const response = await fetch("http://localhost:3000/tickets", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const tickets = await response.json();
+  ticketTable.innerHTML = "";
+
+  tickets.forEach(t => {
+    ticketTable.innerHTML += `
+      <tr>
+        <td>${t.title}</td>
+        <td>${t.status}</td>
+        <td>${t.priority}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" onclick="changeStatus('${t._id}')">Cambiar Estado</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+async function changeStatus(id) {
+  await fetch(`http://localhost:3000/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  loadTickets();
+}
+
+loadTickets();
+</script>
+
+</body>
+</html>
